@@ -13,7 +13,7 @@ def get_count():
         response = requests.get(youtube_api_url)
         data = response.json()
         subscriber_count = int(data.get("est_sub", 0))
-        avarage_count = subscriber_count - 1019000
+        avarage_count = subscriber_count - 1009000
         print(f"Abone Sayisi: {avarage_count}")
     except Exception as e:
         print(f"Hata: {e}")
