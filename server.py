@@ -18,7 +18,7 @@ def get_count():
         if response.status_code == 200:
             data = response.json()
             subscriber_count = int(data.get("est_sub", 0))
-            avarage_count = subscriber_count - 1001000 + 1260
+            avarage_count = subscriber_count - 1001000 
             print(f"Abone Sayısı: {avarage_count}")
         else:
             print(f"API hata kodu: {response.status_code}")
