@@ -15,14 +15,13 @@ def get_count():
 
     try:
         response = requests.get(youtube_api_url)
-        if response.status_code == 200:
-            data = response.json()
-            subscriber_count = int(data.get("est_sub", 0))
-            avarage_count = subscriber_count - 1001000 
-            print(f"Abone Sayısı: {avarage_count}")
-        else:
-            print(f"API hata kodu: {response.status_code}")
-            avarage_count = 0
+        response.raise_for_status()  # Hatalı istekleri otomatik yakala
+        data = response.json()
+
+        subscriber_count = int(data.get("est_sub", 0))
+        avarage_count = subscriber_count - 1001000
+
+        print(f"API'den Gelen: {subscriber_count} | Ortalama: {avarage_count}")
     except Exception as e:
         print(f"Hata: {e}")
         avarage_count = 0
