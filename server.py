@@ -13,20 +13,16 @@ def get_count():
     CHANNEL_ID = "UCaDpCyQiDfjLJ5jTmzZz7ZA"
     youtube_api_url = f"https://api.socialcounts.org/youtube-live-subscriber-count/{CHANNEL_ID}"
 
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                      "AppleWebKit/537.36 (KHTML, like Gecko) "
-                      "Chrome/91.0.4472.124 Safari/537.36"
-    }
-
     try:
-        response = requests.get(youtube_api_url, headers=headers)
-        response.raise_for_status()
-        data = response.json()
-
-        subscriber_count = int(data.get("est_sub", 0))
-        avarage_count = subscriber_count - 1001000
-        print(f"Abone Sayısı: {subscriber_count} | Ortalama: {avarage_count}")
+        response = requests.get(youtube_api_url)
+        if response.status_code == 200:
+            data = response.json()
+            subscriber_count = int(data.get("est_sub", 0))
+            avarage_count = subscriber_count - 1001000 
+            print(f"Abone Sayısı: {avarage_count}")
+        else:
+            print(f"API hata kodu: {response.status_code}")
+            avarage_count = 0
     except Exception as e:
         print(f"Hata: {e}")
         avarage_count = 0
