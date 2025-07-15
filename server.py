@@ -1,5 +1,4 @@
-import subprocess
-import json
+import httpx
 from flask import Flask, jsonify
 import os
 
@@ -12,18 +11,23 @@ def index():
 @app.route('/count', methods=['GET'])
 def get_count():
     CHANNEL_ID = "UCaDpCyQiDfjLJ5jTmzZz7ZA"
-    url = f"https://api.socialcounts.org/youtube-live-subscriber-count/{CHANNEL_ID}"
+    youtube_api_url = f"https://api.socialcounts.org/youtube-live-subscriber-count/{CHANNEL_ID}"
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "Accept": "application/json",
+        "Referer": "https://socialcounts.org/",
+        "Origin": "https://socialcounts.org"
+    }
 
     try:
-        result = subprocess.run(
-            ['curl', '-s', '-A', 'Mozilla/5.0', url],
-            stdout=subprocess.PIPE,
-            check=True
-        )
-        data = json.loads(result.stdout)
-        subscriber_count = int(data.get("est_sub", 0))
-        avarage_count = subscriber_count - 1001000
-        print(f"Abone Sayısı: {subscriber_count} | Ortalama: {avarage_count}")
+        with httpx.Client(headers=headers, timeout=10.0) as client:
+            response = client.get(youtube_api_url)
+            response.raise_for_status()
+            data = response.json()
+            subscriber_count = int(data.get("est_sub", 0))
+            avarage_count = subscriber_count - 1001000
+            print(f"Abone Sayısı: {subscriber_count} | Ortalama: {avarage_count}")
     except Exception as e:
         print(f"Hata: {e}")
         avarage_count = 0
