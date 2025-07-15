@@ -13,7 +13,6 @@ def get_count():
     CHANNEL_ID = "UCaDpCyQiDfjLJ5jTmzZz7ZA"
     youtube_api_url = f"https://api.socialcounts.org/youtube-live-subscriber-count/{CHANNEL_ID}"
 
-    # User-Agent header'ı kesin olarak tanımlanıyor
     headers = {
         "User-Agent": (
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -24,7 +23,7 @@ def get_count():
 
     try:
         response = requests.get(youtube_api_url, headers=headers)
-        response.raise_for_status()  # 403 gibi hataları net verir
+        response.raise_for_status()
         data = response.json()
         subscriber_count = int(data.get("est_sub", 0))
         avarage_count = subscriber_count - 1001000
@@ -40,4 +39,5 @@ def get_count():
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    print("Flask sunucusu çalışı
+    print("Flask sunucusu çalışıyor...")
+    app.run(host='0.0.0.0', port=port)
