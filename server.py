@@ -13,7 +13,7 @@ def get_count():
     CHANNEL_ID = "UCaDpCyQiDfjLJ5jTmzZz7ZA"
     youtube_api_url = f"https://api.socialcounts.org/youtube-live-subscriber-count/{CHANNEL_ID}"
 
-    # Kullanılacak headers
+    # User-Agent header'ı kesin olarak tanımlanıyor
     headers = {
         "User-Agent": (
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -24,22 +24,20 @@ def get_count():
 
     try:
         response = requests.get(youtube_api_url, headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            subscriber_count = int(data.get("est_sub", 0))
-            avarage_count = subscriber_count - 1001000 
-            print(f"Abone Sayısı: {avarage_count}")
-        else:
-            print(f"API hata kodu: {response.status_code}")
-            avarage_count = 0
+        response.raise_for_status()  # 403 gibi hataları net verir
+        data = response.json()
+        subscriber_count = int(data.get("est_sub", 0))
+        avarage_count = subscriber_count - 1001000
+        print(f"Abone Sayısı: {subscriber_count} | Ortalama: {avarage_count}")
+    except requests.exceptions.HTTPError as errh:
+        print(f"HTTP Hatası: {errh}")
+        avarage_count = 0
     except Exception as e:
-        print(f"Hata: {e}")
+        print(f"Genel Hata: {e}")
         avarage_count = 0
 
     return jsonify({"count": avarage_count})
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    print("Flask sunucusu çalışıyor...")
-    app.run(host='0.0.0.0', port=port)
-
+    print("Flask sunucusu çalışı
