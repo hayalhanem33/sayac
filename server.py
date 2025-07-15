@@ -13,8 +13,17 @@ def get_count():
     CHANNEL_ID = "UCaDpCyQiDfjLJ5jTmzZz7ZA"
     youtube_api_url = f"https://api.socialcounts.org/youtube-live-subscriber-count/{CHANNEL_ID}"
 
+    # Kullanılacak headers
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/91.0.4472.124 Safari/537.36"
+        )
+    }
+
     try:
-        response = requests.get(youtube_api_url)
+        response = requests.get(youtube_api_url, headers=headers)
         if response.status_code == 200:
             data = response.json()
             subscriber_count = int(data.get("est_sub", 0))
@@ -33,3 +42,4 @@ if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     print("Flask sunucusu çalışıyor...")
     app.run(host='0.0.0.0', port=port)
+
