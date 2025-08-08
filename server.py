@@ -114,57 +114,44 @@ def get_count():
 
 @app.route('/test', methods=['GET'])
 def test_api():
-    """Test endpoint to check all socialcounts API endpoints"""
+    """Test endpoint to check web scraping approach"""
     CHANNEL_ID = "UCaDpCyQiDfjLJ5jTmzZz7ZA"
-    
-    api_endpoints = [
-        f"https://api.socialcounts.org/youtube-live-subscriber-count/{CHANNEL_ID}",
-        f"https://socialcounts.org/api/youtube-live-subscriber-count/{CHANNEL_ID}",
-        f"https://api.socialcounts.org/youtube-subscriber-count/{CHANNEL_ID}"
-    ]
+    scrape_url = f"https://socialcounts.org/youtube-live-subscriber-count/{CHANNEL_ID}"
     
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "application/json, text/plain, */*",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.9",
-        "Referer": "https://socialcounts.org/",
-        "Origin": "https://socialcounts.org"
+        "Accept-Encoding": "gzip, deflate, br",
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache"
     }
     
-    results = []
-    
-    for i, url in enumerate(api_endpoints):
-        try:
-            with httpx.Client(headers=headers, timeout=15.0, follow_redirects=True) as client:
-                response = client.get(url)
-                results.append({
-                    "endpoint": i+1,
-                    "url": url,
-                    "status": "success",
-                    "status_code": response.status_code,
-                    "response_text": response.text[:500]
-                })
-        except httpx.HTTPStatusError as e:
-            results.append({
-                "endpoint": i+1,
-                "url": url,
-                "status": "http_error",
-                "status_code": e.response.status_code,
-                "error": str(e),
-                "response_text": e.response.text[:200]
+    try:
+        with httpx.Client(headers=headers, timeout=20.0, follow_redirects=True) as client:
+            response = client.get(scrape_url)
+            return jsonify({
+                "status": "success",
+                "status_code": response.status_code,
+                "url": scrape_url,
+                "content_length": len(response.text),
+                "content_preview": response.text[:1000],
+                "headers": dict(response.headers)
             })
-        except Exception as e:
-            results.append({
-                "endpoint": i+1,
-                "url": url,
-                "status": "error",
-                "error": str(e)
-            })
-    
-    return jsonify({
-        "test_results": results,
-        "total_endpoints": len(api_endpoints)
-    })
+    except httpx.HTTPStatusError as e:
+        return jsonify({
+            "status": "http_error",
+            "status_code": e.response.status_code,
+            "error": str(e),
+            "url": scrape_url,
+            "response_text": e.response.text[:500]
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "error": str(e),
+            "url": scrape_url
+        })
 
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -177,76 +164,68 @@ def health_check():
 def get_subscriber_count():
     CHANNEL_ID = "UCaDpCyQiDfjLJ5jTmzZz7ZA"
     
-    # Farklı API endpoint'leri deniyoruz
-    api_endpoints = [
-        f"https://api.socialcounts.org/youtube-live-subscriber-count/{CHANNEL_ID}",
-        f"https://socialcounts.org/api/youtube-live-subscriber-count/{CHANNEL_ID}",
-        f"https://api.socialcounts.org/youtube-subscriber-count/{CHANNEL_ID}"
-    ]
-    
-    # Farklı User-Agent'lar
-    user_agents = [
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    ]
-
-    for endpoint_idx, youtube_api_url in enumerate(api_endpoints):
-        for user_agent_idx, user_agent in enumerate(user_agents):
-            try:
-                headers = {
-                    "User-Agent": user_agent,
-                    "Accept": "application/json, text/plain, */*",
-                    "Accept-Language": "en-US,en;q=0.9",
-                    "Accept-Encoding": "gzip, deflate, br",
-                    "Referer": "https://socialcounts.org/",
-                    "Origin": "https://socialcounts.org",
-                    "Sec-Fetch-Dest": "empty",
-                    "Sec-Fetch-Mode": "cors",
-                    "Sec-Fetch-Site": "same-site",
-                    "Cache-Control": "no-cache",
-                    "Pragma": "no-cache",
-                    "DNT": "1",
-                    "Connection": "keep-alive"
-                }
-
-                logger.info(f"Trying endpoint {endpoint_idx+1}, User-Agent {user_agent_idx+1}: {youtube_api_url}")
-                
-                with httpx.Client(
-                    headers=headers, 
-                    timeout=30.0, 
-                    follow_redirects=True
-                ) as client:
-                    response = client.get(youtube_api_url)
-                    response.raise_for_status()
-                    data = response.json()
-                    
-                    logger.info(f"Success! API Response: {data}")
-                    
-                    subscriber_count = int(data.get("est_sub", 0))
+    # Web scraping yaklaşımı - doğrudan socialcounts.org sitesinden veri çekelim
+    try:
+        logger.info("Trying web scraping approach...")
+        
+        # Socialcounts.org'un ana sayfasından veri çekelim
+        scrape_url = f"https://socialcounts.org/youtube-live-subscriber-count/{CHANNEL_ID}"
+        
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "none",
+            "Upgrade-Insecure-Requests": "1"
+        }
+        
+        with httpx.Client(headers=headers, timeout=30.0, follow_redirects=True) as client:
+            response = client.get(scrape_url)
+            response.raise_for_status()
+            html_content = response.text
+            
+            logger.info(f"Successfully scraped page, content length: {len(html_content)}")
+            
+            # HTML'den abone sayısını çıkaralım
+            import re
+            
+            # Farklı pattern'lar deneyelim
+            patterns = [
+                r'"est_sub":\s*(\d+)',
+                r'"subscriber_count":\s*(\d+)',
+                r'"count":\s*(\d+)',
+                r'(\d{1,3}(?:,\d{3})*)\s*subscribers',
+                r'(\d{1,3}(?:,\d{3})*)\s*abone'
+            ]
+            
+            for pattern in patterns:
+                match = re.search(pattern, html_content)
+                if match:
+                    subscriber_count = int(match.group(1).replace(',', ''))
                     avarage_count = subscriber_count - 1001000
                     
-                    logger.info(f"Abone Sayısı: {subscriber_count} | Ortalama: {avarage_count}")
+                    logger.info(f"Found subscriber count: {subscriber_count} | Average: {avarage_count}")
                     
                     return {
                         "count": avarage_count,
                         "raw_count": subscriber_count,
                         "status": "success",
-                        "method": f"Endpoint {endpoint_idx+1}, User-Agent {user_agent_idx+1}"
+                        "method": "web scraping"
                     }
-                    
-            except httpx.RequestError as e:
-                logger.error(f"Request error (endpoint {endpoint_idx+1}, UA {user_agent_idx+1}): {e}")
-                continue
-            except httpx.HTTPStatusError as e:
-                logger.error(f"HTTP error (endpoint {endpoint_idx+1}, UA {user_agent_idx+1}): {e.response.status_code} - {e}")
-                continue
-            except Exception as e:
-                logger.error(f"Unexpected error (endpoint {endpoint_idx+1}, UA {user_agent_idx+1}): {e}")
-                continue
-
-    # Tüm denemeler başarısız olursa simülasyon kullan
-    logger.warning("All API attempts failed, using simulation")
+            
+            # Pattern bulunamazsa simülasyon kullan
+            logger.warning("No subscriber count pattern found in HTML, using simulation")
+            
+    except Exception as e:
+        logger.error(f"Web scraping error: {e}")
+    
+    # Web scraping başarısız olursa simülasyon kullan
+    logger.warning("Web scraping failed, using simulation")
     try:
         import random
         import time
@@ -264,7 +243,7 @@ def get_subscriber_count():
             "count": avarage_count,
             "raw_count": subscriber_count,
             "status": "success",
-            "note": "Simulated data - API unavailable"
+            "note": "Simulated data - API and scraping unavailable"
         }
         
     except Exception as e:
