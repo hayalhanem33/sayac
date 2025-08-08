@@ -238,6 +238,16 @@ def health_check():
         "message": "Server is running"
     })
 
+@app.route('/number', methods=['GET'])
+def get_number():
+    """Simple endpoint that returns only the number for Smiirl"""
+    count_data = get_subscriber_count()
+    
+    if count_data.get("status") == "success":
+        return jsonify({"number": count_data.get("count", 0)})
+    else:
+        return jsonify({"number": 0, "error": count_data.get("error", "Unknown error")})
+
 def get_subscriber_count():
     CHANNEL_ID = "UCaDpCyQiDfjLJ5jTmzZz7ZA"
     
