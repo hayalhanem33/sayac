@@ -114,12 +114,12 @@ def get_count():
 
 @app.route('/test', methods=['GET'])
 def test_api():
-    """Test endpoint to check all socialcounts approaches"""
+    """Test endpoint to check different User-Agent approaches"""
     CHANNEL_ID = "UCaDpCyQiDfjLJ5jTmzZz7ZA"
     
     approaches = [
         {
-            "name": "Standard API",
+            "name": "Chrome User-Agent",
             "url": f"https://api.socialcounts.org/youtube-live-subscriber-count/{CHANNEL_ID}",
             "headers": {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -127,18 +127,27 @@ def test_api():
             }
         },
         {
-            "name": "Alternative Endpoint",
-            "url": f"https://socialcounts.org/api/youtube-live-subscriber-count/{CHANNEL_ID}",
+            "name": "Safari User-Agent",
+            "url": f"https://api.socialcounts.org/youtube-live-subscriber-count/{CHANNEL_ID}",
             "headers": {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
                 "Accept": "application/json"
             }
         },
         {
-            "name": "Minimal Headers",
+            "name": "Firefox User-Agent",
             "url": f"https://api.socialcounts.org/youtube-live-subscriber-count/{CHANNEL_ID}",
             "headers": {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/120.0",
+                "Accept": "application/json"
+            }
+        },
+        {
+            "name": "Mobile User-Agent",
+            "url": f"https://api.socialcounts.org/youtube-live-subscriber-count/{CHANNEL_ID}",
+            "headers": {
+                "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+                "Accept": "application/json"
             }
         }
     ]
@@ -147,7 +156,7 @@ def test_api():
     
     for i, approach in enumerate(approaches):
         try:
-            with httpx.Client(headers=approach["headers"], timeout=10.0, follow_redirects=True) as client:
+            with httpx.Client(headers=approach["headers"], timeout=15.0, follow_redirects=True) as client:
                 response = client.get(approach["url"])
                 results.append({
                     "approach": i+1,
@@ -195,48 +204,48 @@ def get_subscriber_count():
     
     # Farklı yaklaşımlar deniyoruz
     approaches = [
-        # Yaklaşım 1: Farklı API endpoint'leri
+        # Yaklaşım 1: Farklı User-Agent'lar
         {
+            "name": "Chrome User-Agent",
             "url": f"https://api.socialcounts.org/youtube-live-subscriber-count/{CHANNEL_ID}",
             "headers": {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
                 "Accept": "application/json, text/plain, */*",
                 "Accept-Language": "en-US,en;q=0.9",
+                "Accept-Encoding": "gzip, deflate, br",
                 "Referer": "https://socialcounts.org/",
-                "Origin": "https://socialcounts.org"
+                "Origin": "https://socialcounts.org",
+                "Sec-Fetch-Dest": "empty",
+                "Sec-Fetch-Mode": "cors",
+                "Sec-Fetch-Site": "same-site"
             }
         },
-        # Yaklaşım 2: Farklı User-Agent
+        # Yaklaşım 2: Safari User-Agent
         {
+            "name": "Safari User-Agent",
             "url": f"https://api.socialcounts.org/youtube-live-subscriber-count/{CHANNEL_ID}",
             "headers": {
-                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
                 "Accept": "application/json",
                 "Accept-Language": "en-US,en;q=0.9"
             }
         },
-        # Yaklaşım 3: Farklı endpoint
+        # Yaklaşım 3: Firefox User-Agent
         {
-            "url": f"https://socialcounts.org/api/youtube-live-subscriber-count/{CHANNEL_ID}",
-            "headers": {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                "Accept": "application/json"
-            }
-        },
-        # Yaklaşım 4: Minimal headers
-        {
+            "name": "Firefox User-Agent",
             "url": f"https://api.socialcounts.org/youtube-live-subscriber-count/{CHANNEL_ID}",
             "headers": {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/120.0",
+                "Accept": "application/json",
+                "Accept-Language": "en-US,en;q=0.5"
             }
         },
-        # Yaklaşım 5: POST request
+        # Yaklaşım 4: Mobil User-Agent
         {
+            "name": "Mobile User-Agent",
             "url": f"https://api.socialcounts.org/youtube-live-subscriber-count/{CHANNEL_ID}",
-            "method": "POST",
             "headers": {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
                 "Accept": "application/json"
             }
         }
@@ -244,42 +253,36 @@ def get_subscriber_count():
     
     for i, approach in enumerate(approaches):
         try:
-            logger.info(f"Trying approach {i+1}: {approach['url']}")
+            logger.info(f"Trying approach {i+1}: {approach['name']}")
             
-            method = approach.get("method", "GET")
-            
-            with httpx.Client(headers=approach["headers"], timeout=15.0, follow_redirects=True) as client:
-                if method == "POST":
-                    response = client.post(approach["url"])
-                else:
-                    response = client.get(approach["url"])
-                
+            with httpx.Client(headers=approach["headers"], timeout=20.0, follow_redirects=True) as client:
+                response = client.get(approach["url"])
                 response.raise_for_status()
                 data = response.json()
                 
-                logger.info(f"Success with approach {i+1}! Response: {data}")
+                logger.info(f"Success with {approach['name']}! Response: {data}")
                 
                 subscriber_count = int(data.get("est_sub", 0))
                 avarage_count = subscriber_count - 1001000
                 
-                logger.info(f"Real data - Abone Sayısı: {subscriber_count:,} | Ortalama: {avarage_count:,}")
+                logger.info(f"Real data from {approach['name']} - Abone Sayısı: {subscriber_count:,} | Ortalama: {avarage_count:,}")
                 
                 return {
                     "count": avarage_count,
                     "raw_count": subscriber_count,
                     "status": "success",
-                    "method": f"approach {i+1}",
+                    "method": approach["name"],
                     "source": "socialcounts API"
                 }
                 
         except httpx.RequestError as e:
-            logger.error(f"Request error (approach {i+1}): {e}")
+            logger.error(f"Request error ({approach['name']}): {e}")
             continue
         except httpx.HTTPStatusError as e:
-            logger.error(f"HTTP error (approach {i+1}): {e.response.status_code} - {e}")
+            logger.error(f"HTTP error ({approach['name']}): {e.response.status_code} - {e}")
             continue
         except Exception as e:
-            logger.error(f"Unexpected error (approach {i+1}): {e}")
+            logger.error(f"Unexpected error ({approach['name']}): {e}")
             continue
     
     # Tüm yaklaşımlar başarısız olursa basit simülasyon
@@ -302,7 +305,7 @@ def get_subscriber_count():
             "raw_count": subscriber_count,
             "status": "success",
             "method": "basic simulation",
-            "note": "API unavailable"
+            "note": "All APIs unavailable"
         }
         
     except Exception as e:
