@@ -114,53 +114,63 @@ def get_count():
 
 @app.route('/test', methods=['GET'])
 def test_api():
-    """Test endpoint to check web scraping and simulation"""
+    """Test endpoint to check final attempts and simulation"""
     CHANNEL_ID = "UCaDpCyQiDfjLJ5jTmzZz7ZA"
-    scrape_url = f"https://socialcounts.org/youtube-live-subscriber-count/{CHANNEL_ID}"
     
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Cache-Control": "no-cache",
-        "Pragma": "no-cache"
-    }
+    # Final attempts test
+    final_attempts = [
+        {
+            "name": "Alternative URL",
+            "url": f"https://socialcounts.org/youtube-subscriber-count/{CHANNEL_ID}",
+            "headers": {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            }
+        },
+        {
+            "name": "Mobile Safari",
+            "url": f"https://socialcounts.org/youtube-live-subscriber-count/{CHANNEL_ID}",
+            "headers": {
+                "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            }
+        }
+    ]
     
     results = []
     
-    # Web scraping test
-    try:
-        with httpx.Client(headers=headers, timeout=20.0, follow_redirects=True) as client:
-            response = client.get(scrape_url)
+    # Final attempts test
+    for i, attempt in enumerate(final_attempts):
+        try:
+            with httpx.Client(headers=attempt["headers"], timeout=15.0, follow_redirects=True) as client:
+                response = client.get(attempt["url"])
+                results.append({
+                    "attempt": i+1,
+                    "name": attempt["name"],
+                    "url": attempt["url"],
+                    "status": "success",
+                    "status_code": response.status_code,
+                    "content_length": len(response.text),
+                    "content_preview": response.text[:500]
+                })
+        except httpx.HTTPStatusError as e:
             results.append({
-                "service": "web_scraping",
-                "name": "Web Scraping",
-                "url": scrape_url,
-                "status": "success",
-                "status_code": response.status_code,
-                "content_length": len(response.text),
-                "content_preview": response.text[:1000],
-                "headers": dict(response.headers)
+                "attempt": i+1,
+                "name": attempt["name"],
+                "url": attempt["url"],
+                "status": "http_error",
+                "status_code": e.response.status_code,
+                "error": str(e),
+                "response_text": e.response.text[:200]
             })
-    except httpx.HTTPStatusError as e:
-        results.append({
-            "service": "web_scraping",
-            "name": "Web Scraping",
-            "url": scrape_url,
-            "status": "http_error",
-            "status_code": e.response.status_code,
-            "error": str(e),
-            "response_text": e.response.text[:500]
-        })
-    except Exception as e:
-        results.append({
-            "service": "web_scraping",
-            "name": "Web Scraping",
-            "url": scrape_url,
-            "status": "error",
-            "error": str(e)
-        })
+        except Exception as e:
+            results.append({
+                "attempt": i+1,
+                "name": attempt["name"],
+                "url": attempt["url"],
+                "status": "error",
+                "error": str(e)
+            })
     
     # Simülasyon test
     try:
@@ -191,7 +201,7 @@ def test_api():
         avarage_count = subscriber_count - 1001000
         
         simulation_result = {
-            "service": "simulation",
+            "attempt": "simulation",
             "name": "Realistic Simulation",
             "status": "success",
             "subscriber_count": subscriber_count,
@@ -208,7 +218,7 @@ def test_api():
         
     except Exception as e:
         results.append({
-            "service": "simulation",
+            "attempt": "simulation",
             "name": "Realistic Simulation",
             "status": "error",
             "error": str(e)
@@ -216,7 +226,7 @@ def test_api():
     
     return jsonify({
         "test_results": results,
-        "total_services": 2,
+        "total_attempts": len(final_attempts) + 1,
         "channel_id": CHANNEL_ID
     })
 
@@ -231,72 +241,81 @@ def health_check():
 def get_subscriber_count():
     CHANNEL_ID = "UCaDpCyQiDfjLJ5jTmzZz7ZA"
     
-    # Web scraping yaklaşımı - doğrudan socialcounts.org sitesinden veri çekelim
-    try:
-        logger.info("Trying web scraping approach...")
-        
-        # Socialcounts.org'un ana sayfasından veri çekelim
-        scrape_url = f"https://socialcounts.org/youtube-live-subscriber-count/{CHANNEL_ID}"
-        
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Cache-Control": "no-cache",
-            "Pragma": "no-cache",
-            "Sec-Fetch-Dest": "document",
-            "Sec-Fetch-Mode": "navigate",
-            "Sec-Fetch-Site": "none",
-            "Upgrade-Insecure-Requests": "1"
+    # Son deneme - farklı yaklaşımlar
+    final_attempts = [
+        # Deneme 1: Farklı URL
+        {
+            "name": "Alternative URL",
+            "url": f"https://socialcounts.org/youtube-subscriber-count/{CHANNEL_ID}",
+            "headers": {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.5",
+                "Accept-Encoding": "gzip, deflate",
+                "Connection": "keep-alive",
+                "Upgrade-Insecure-Requests": "1"
+            }
+        },
+        # Deneme 2: Farklı User-Agent
+        {
+            "name": "Mobile Safari",
+            "url": f"https://socialcounts.org/youtube-live-subscriber-count/{CHANNEL_ID}",
+            "headers": {
+                "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.5",
+                "Accept-Encoding": "gzip, deflate"
+            }
         }
-        
-        with httpx.Client(headers=headers, timeout=30.0, follow_redirects=True) as client:
-            response = client.get(scrape_url)
-            response.raise_for_status()
-            html_content = response.text
-            
-            logger.info(f"Successfully scraped page, content length: {len(html_content)}")
-            
-            # HTML'den abone sayısını çıkaralım
-            import re
-            
-            # Farklı pattern'lar deneyelim
-            patterns = [
-                r'"est_sub":\s*(\d+)',
-                r'"subscriber_count":\s*(\d+)',
-                r'"count":\s*(\d+)',
-                r'(\d{1,3}(?:,\d{3})*)\s*subscribers',
-                r'(\d{1,3}(?:,\d{3})*)\s*abone',
-                r'(\d{1,3}(?:,\d{3})*)\s*followers',
-                r'(\d{1,3}(?:,\d{3})*)\s*subscribers',
-                r'(\d{1,3}(?:,\d{3})*)\s*subscriber'
-            ]
-            
-            for pattern in patterns:
-                match = re.search(pattern, html_content, re.IGNORECASE)
-                if match:
-                    subscriber_count = int(match.group(1).replace(',', ''))
-                    avarage_count = subscriber_count - 1001000
-                    
-                    logger.info(f"Found subscriber count: {subscriber_count:,} | Average: {avarage_count:,}")
-                    
-                    return {
-                        "count": avarage_count,
-                        "raw_count": subscriber_count,
-                        "status": "success",
-                        "method": "web scraping",
-                        "source": "socialcounts.org"
-                    }
-            
-            # Pattern bulunamazsa simülasyon kullan
-            logger.warning("No subscriber count pattern found in HTML, using simulation")
-            
-    except Exception as e:
-        logger.error(f"Web scraping error: {e}")
+    ]
     
-    # Web scraping başarısız olursa simülasyon kullan
-    logger.warning("Web scraping failed, using simulation")
+    for i, attempt in enumerate(final_attempts):
+        try:
+            logger.info(f"Final attempt {i+1}: {attempt['name']}")
+            
+            with httpx.Client(headers=attempt["headers"], timeout=15.0, follow_redirects=True) as client:
+                response = client.get(attempt["url"])
+                response.raise_for_status()
+                html_content = response.text
+                
+                logger.info(f"Success with {attempt['name']}! Content length: {len(html_content)}")
+                
+                # HTML'den abone sayısını çıkaralım
+                import re
+                
+                patterns = [
+                    r'"est_sub":\s*(\d+)',
+                    r'"subscriber_count":\s*(\d+)',
+                    r'"count":\s*(\d+)',
+                    r'(\d{1,3}(?:,\d{3})*)\s*subscribers',
+                    r'(\d{1,3}(?:,\d{3})*)\s*abone',
+                    r'(\d{1,3}(?:,\d{3})*)\s*followers'
+                ]
+                
+                for pattern in patterns:
+                    match = re.search(pattern, html_content, re.IGNORECASE)
+                    if match:
+                        subscriber_count = int(match.group(1).replace(',', ''))
+                        avarage_count = subscriber_count - 1001000
+                        
+                        logger.info(f"Found real data: {subscriber_count:,} | Average: {avarage_count:,}")
+                        
+                        return {
+                            "count": avarage_count,
+                            "raw_count": subscriber_count,
+                            "status": "success",
+                            "method": attempt["name"],
+                            "source": "real data"
+                        }
+                
+                logger.warning(f"No pattern found in {attempt['name']}")
+                
+        except Exception as e:
+            logger.error(f"Final attempt {i+1} failed: {e}")
+            continue
+    
+    # Tüm denemeler başarısız olursa gerçekçi simülasyon kullan
+    logger.info("All attempts failed, using realistic simulation")
     try:
         import random
         import time
