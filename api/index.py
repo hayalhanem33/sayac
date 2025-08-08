@@ -248,6 +248,16 @@ def get_number():
     else:
         return jsonify({"number": 0, "error": count_data.get("error", "Unknown error")})
 
+@app.route('/smiirl', methods=['GET'])
+def smiirl_endpoint():
+    """Simple JSON endpoint for Smiirl that returns only the number"""
+    count_data = get_subscriber_count()
+    
+    if count_data.get("status") == "success":
+        return jsonify({"number": count_data.get("count", 0)})
+    else:
+        return jsonify({"number": 0})
+
 def get_subscriber_count():
     CHANNEL_ID = "UCaDpCyQiDfjLJ5jTmzZz7ZA"
     
