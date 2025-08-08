@@ -135,7 +135,7 @@ def test_api():
     
     for i, url in enumerate(api_endpoints):
         try:
-            with httpx.Client(headers=headers, timeout=15.0, follow_redirects=True, http2=True) as client:
+            with httpx.Client(headers=headers, timeout=15.0, follow_redirects=True) as client:
                 response = client.get(url)
                 results.append({
                     "endpoint": i+1,
@@ -215,8 +215,7 @@ def get_subscriber_count():
                 with httpx.Client(
                     headers=headers, 
                     timeout=30.0, 
-                    follow_redirects=True,
-                    http2=True
+                    follow_redirects=True
                 ) as client:
                     response = client.get(youtube_api_url)
                     response.raise_for_status()
