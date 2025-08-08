@@ -150,7 +150,7 @@ def health_check():
 
 def get_subscriber_count():
     CHANNEL_ID = "UCaDpCyQiDfjLJ5jTmzZz7ZA"
-    youtube_api_url = f"api.socialcounts.org/youtube-live-subscriber-count/{CHANNEL_ID}"
+    youtube_api_url = f"https://api.socialcounts.org/youtube-live-subscriber-count/{CHANNEL_ID}"
 
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
