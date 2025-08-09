@@ -18,6 +18,16 @@ def index():
         "subscriber_count": count_data
     })
 
+@app.route('/counter', methods=['GET'])
+def counter():
+    """Simple endpoint for Smiirl - returns only the counter value"""
+    count_data = get_subscriber_count()
+    
+    if count_data.get("status") == "success":
+        return str(count_data.get("count", 0))
+    else:
+        return "0"
+
 @app.route('/html', methods=['GET'])
 def html_view():
     count_data = get_subscriber_count()
