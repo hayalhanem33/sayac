@@ -19,15 +19,15 @@ def index():
 
 @app.route('/counter', methods=['GET'])
 def counter():
-    """Simple endpoint for Smiirl - returns only the counter value + 1000"""
+    """Simple endpoint for Smiirl - returns JSON with counter value + 1000"""
     count_data = get_subscriber_count()
     
     if count_data.get("status") == "success":
         original_count = count_data.get("count", 0)
         adjusted_count = original_count + 1000
-        return str(adjusted_count)
+        return jsonify({"count": adjusted_count})
     else:
-        return "1000"
+        return jsonify({"count": 1000})
 
 @app.route('/html', methods=['GET'])
 def html_view():
