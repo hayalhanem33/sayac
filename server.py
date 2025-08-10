@@ -350,7 +350,7 @@ def get_subscriber_count():
         
         # Final hesaplama
         subscriber_count = int(base_count + base_increase * trend_factor)
-        avarage_count = subscriber_count - 1001000
+        avarage_count = subscriber_count - 1001000 + 1000
         
         logger.info(f"Realistic Simulation - Abone Sayısı: {subscriber_count:,} | Ortalama: {avarage_count:,}")
         logger.info(f"Hour: {hour}, Day: {day_of_week}, Multiplier: {hourly_multiplier:.2f}")
