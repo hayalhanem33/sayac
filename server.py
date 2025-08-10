@@ -296,7 +296,7 @@ def get_subscriber_count():
                     match = re.search(pattern, html_content, re.IGNORECASE)
                     if match:
                         subscriber_count = int(match.group(1).replace(',', ''))
-                        avarage_count = subscriber_count - 1001000 + 1000
+                        avarage_count = subscriber_count - 1001000 + 2000
                         
                         logger.info(f"Found real data: {subscriber_count:,} | Average: {avarage_count:,}")
                         
