@@ -198,7 +198,7 @@ def test_api():
         trend_factor = 1 + (current_time % 86400) / 86400 * 0.1
         
         subscriber_count = int(base_count + base_increase * trend_factor)
-        avarage_count = subscriber_count - 1000000
+        avarage_count = subscriber_count - 1001000
         
         simulation_result = {
             "attempt": "simulation",
@@ -296,7 +296,7 @@ def get_subscriber_count():
                     match = re.search(pattern, html_content, re.IGNORECASE)
                     if match:
                         subscriber_count = int(match.group(1).replace(',', ''))
-                        avarage_count = subscriber_count - 1000000
+                        avarage_count = subscriber_count - 1001000
                         
                         logger.info(f"Found real data: {subscriber_count:,} | Average: {avarage_count:,}")
                         
@@ -350,7 +350,7 @@ def get_subscriber_count():
         
         # Final hesaplama
         subscriber_count = int(base_count + base_increase * trend_factor)
-        avarage_count = subscriber_count - 1001000 + 1000
+        avarage_count = subscriber_count - 1001000
         
         logger.info(f"Realistic Simulation - Abone Sayısı: {subscriber_count:,} | Ortalama: {avarage_count:,}")
         logger.info(f"Hour: {hour}, Day: {day_of_week}, Multiplier: {hourly_multiplier:.2f}")
